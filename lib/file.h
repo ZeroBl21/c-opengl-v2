@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-static string read_file(char *filename, arena *a) {
+static string read_file(const char *filename, arena *a) {
   FILE *file = fopen(filename, "rb");
   if (!file) {
     string empty_str = {0}; // Return an empty string if file cannot be opened
