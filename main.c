@@ -7,6 +7,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "include/stb_image.h"
+
 #define SHADER_IMPLEMENTATION
 #include "lib/shader.h"
 
@@ -15,6 +18,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void check_shader_compilation(GLuint shader, const char *shaderType,
                               const char *filename);
 void check_program_linking(GLuint programID);
+uint32_t generate_texture(const char *path);
 
 const size_t SCR_WIDTH = 800;
 const size_t SCR_HEIGHT = 600;
@@ -47,22 +51,20 @@ int main(void) {
 
   Shader base_shader = new_shader("./glsl/vs.glsl", "./glsl/fs.glsl");
 
-  // float vertices[] = {
-  //     // positions         // colors
-  //     0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
-  //     -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-  //     0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f  // top
-  // };
-
-  // Upside Down
   float vertices[] = {
-      // positions         // colors
-      0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, // bottom right
-      -0.5f, 0.5f,  0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-      0.0f,  -0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // top
+      // positions          // colors           // texture coords
+      0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+      -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
   };
 
-  uint32_t VBO, VAO;
+  uint32_t indices[] = {
+      0, 1, 3, // first triangle
+      1, 2, 3  // second triangle
+  };
+
+  uint32_t VBO, VAO, EBO;
 
   // VAO
   glGenVertexArrays(1, &VAO);
@@ -73,14 +75,31 @@ int main(void) {
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), NULL);
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * sizeof(float), NULL);
   glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+                        (void *)(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
+
   glBindVertexArray(0);
+
+  // Textures
+  uint32_t tContainer = generate_texture("./textures/container.jpg");
+  uint32_t tFace = generate_texture("./textures/awesome_face.png");
+
+  shader_use(&base_shader);
+  shader_set_int(&base_shader, "texture1", 0);
+  shader_set_int(&base_shader, "texture2", 1);
 
   // Main rendering loop
   while (!glfwWindowShouldClose(window)) {
@@ -89,10 +108,15 @@ int main(void) {
     glClearColor(0x1e / 255.0, 0x29 / 255.0, 0x3b / 255.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader_use(&base_shader);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tContainer);
 
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, tFace);
+
+    shader_use(&base_shader);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // Swap front and back buffers
     glfwSwapBuffers(window);
@@ -102,6 +126,7 @@ int main(void) {
 
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
+  glDeleteBuffers(1, &EBO);
   shader_free(&base_shader);
   // Cleanup GLFW
   glfwTerminate();
@@ -128,4 +153,42 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
   (void)width;
   (void)height;
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+}
+
+uint32_t generate_texture(const char *path) {
+  stbi_set_flip_vertically_on_load(true);
+
+  uint32_t texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  int32_t width, height, nr_channels;
+  uint8_t *data = stbi_load(path, &width, &height, &nr_channels, 0);
+  if (!data) {
+    fprintf(stderr, "ERROR: Failed to load texture at path: %s\n", path);
+    stbi_image_free(data);
+    return 0;
+  }
+
+  GLenum format;
+  if (nr_channels == 1)
+    format = GL_RED;
+  if (nr_channels == 3)
+    format = GL_RGB;
+  if (nr_channels == 4)
+    format = GL_RGBA;
+
+  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
+               GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  stbi_image_free(data);
+  return texture;
 }
