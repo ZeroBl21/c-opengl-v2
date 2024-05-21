@@ -1,3 +1,5 @@
+#include "include/cglm/struct/mat4.h"
+#include "include/cglm/types-struct.h"
 #include <GL/glew.h>
 //
 #include <GL/gl.h>
@@ -8,6 +10,7 @@
 #include <stdio.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "include/cglm/struct/affine-pre.h"
 #include "include/stb_image.h"
 
 #define SHADER_IMPLEMENTATION
@@ -114,7 +117,17 @@ int main(void) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, tFace);
 
+    // Transformations
+    mat4s transform = glms_mat4_identity();
+    transform = glms_translate(transform, (vec3s){{0.5f, -0.5f, 0.0f}});
+    transform = glms_rotate(transform, (float)glfwGetTime(),
+                            (vec3s){{0.0f, 0.0f, 1.0f}});
+    // Transformations
+
     shader_use(&base_shader);
+    shader_set_mat4(&base_shader, "transform", transform);
+
+    // Render Container
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

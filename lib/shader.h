@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// #include "include/cglm/types-struct.h"
+#include "../include/cglm/types-struct.h"
 #include "file.h"
 
 typedef struct {
@@ -21,26 +21,26 @@ void shader_set_bool(Shader *shader, const char *name, bool value);
 void shader_set_int(Shader *shader, const char *name, int value);
 void shader_set_float(Shader *shader, const char *name, float value);
 // Vectors
-// void shader_set_vec2(Shader* shader, const char* name, const vec2s value);
-// void shader_set_vec2f(Shader* shader, const char* name, float x, float y);
-// void shader_set_vec3(Shader* shader, const char* name, const vec3s value);
-// void shader_set_vec3f(Shader* shader, const char* name, float x, float y,
-//                       float z);
-// void shader_set_vec4(Shader* shader, const char* name, const vec4s value);
-// void shader_set_vec4f(Shader* shader, const char* name, float x, float y,
-//                       float z, float w);
-// // Matrices
-// void shader_set_mat2(Shader* shader, const char* name, const mat2s mat);
-// void shader_set_mat3(Shader* shader, const char* name, const mat3s mat);
-// void shader_set_mat4(Shader* shader, const char* name, const mat4s mat);
-//
+void shader_set_vec2(Shader *shader, const char *name, const vec2s value);
+void shader_set_vec2f(Shader *shader, const char *name, float x, float y);
+void shader_set_vec3(Shader *shader, const char *name, const vec3s value);
+void shader_set_vec3f(Shader *shader, const char *name, float x, float y,
+                      float z);
+void shader_set_vec4(Shader *shader, const char *name, const vec4s value);
+void shader_set_vec4f(Shader *shader, const char *name, float x, float y,
+                      float z, float w);
+// Matrices
+void shader_set_mat2(Shader *shader, const char *name, const mat2s mat);
+void shader_set_mat3(Shader *shader, const char *name, const mat3s mat);
+void shader_set_mat4(Shader *shader, const char *name, const mat4s mat);
+
 // Helper
 void check_shader_compilation(GLuint shader, const char *shader_type,
                               const char *filename);
 void check_program_linking(GLuint programID);
 #endif // SHADER_H
 
-// #define SHADER_IMPLEMENTATION
+#define SHADER_IMPLEMENTATION
 #ifdef SHADER_IMPLEMENTATION
 inline Shader new_shader(const char *vertex_path, const char *fragment_path) {
   Shader shader = {0};
@@ -96,53 +96,48 @@ inline void shader_set_float(Shader *shader, const char *name, float value) {
   glUniform1f(glGetUniformLocation(shader->ID, name), value);
 }
 // ------------------------------------------------------------------------
-// inline void shader_set_vec2(Shader* shader, const char* name,
-//                             const vec2s value) {
-//   glUniform2fv(glGetUniformLocation(shader->ID, name), 1, value.raw);
-// }
-//
-// inline void shader_set_vec2f(Shader* shader, const char* name, float x,
-//                              float y) {
-//   glUniform2f(glGetUniformLocation(shader->ID, name), x, y);
-// }
-// // ------------------------------------------------------------------------
-// inline void shader_set_vec3(Shader* shader, const char* name,
-//                             const vec3s value) {
-//   glUniform3fv(glGetUniformLocation(shader->ID, name), 1, value.raw);
-// }
-// inline void shader_set_vec3f(Shader* shader, const char* name, float x, float
-// y,
-//                              float z) {
-//   glUniform3f(glGetUniformLocation(shader->ID, name), x, y, z);
-// }
-// // ------------------------------------------------------------------------
-// inline void shader_set_vec4(Shader* shader, const char* name,
-//                             const vec4s value) {
-//   glUniform4fv(glGetUniformLocation(shader->ID, name), 1, value.raw);
-// 
-// inline void shader_set_vec4f(Shader* shader, const char* name, float x, float
-// y,
-//                              float z, float w) {
-//   glUniform4f(glGetUniformLocation(shader->ID, name), x, y, z, w);
-// }
-// // ------------------------------------------------------------------------
-// inline void shader_set_mat2(Shader* shader, const char* name, const mat2s
-// mat) {
-//   glUniformMatrix2fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE,
-//                      *mat.raw);
-// }
-// // ------------------------------------------------------------------------
-// inline void shader_set_mat3(Shader* shader, const char* name, const mat3s
-// mat) {
-//   glUniformMatrix3fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE,
-//                      *mat.raw);
-// }
-// // ------------------------------------------------------------------------
-// inline void shader_set_mat4(Shader* shader, const char* name, const mat4s
-// mat) {
-//   glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE,
-//                      *mat.raw);
-// }
+inline void shader_set_vec2(Shader *shader, const char *name,
+                            const vec2s value) {
+  glUniform2fv(glGetUniformLocation(shader->ID, name), 1, value.raw);
+}
+
+inline void shader_set_vec2f(Shader *shader, const char *name, float x,
+                             float y) {
+  glUniform2f(glGetUniformLocation(shader->ID, name), x, y);
+}
+// ------------------------------------------------------------------------
+inline void shader_set_vec3(Shader *shader, const char *name,
+                            const vec3s value) {
+  glUniform3fv(glGetUniformLocation(shader->ID, name), 1, value.raw);
+}
+inline void shader_set_vec3f(Shader *shader, const char *name, float x, float y,
+                             float z) {
+  glUniform3f(glGetUniformLocation(shader->ID, name), x, y, z);
+}
+// ------------------------------------------------------------------------
+inline void shader_set_vec4(Shader *shader, const char *name,
+                            const vec4s value) {
+  glUniform4fv(glGetUniformLocation(shader->ID, name), 1, value.raw);
+}
+inline void shader_set_vec4f(Shader *shader, const char *name, float x, float y,
+                             float z, float w) {
+  glUniform4f(glGetUniformLocation(shader->ID, name), x, y, z, w);
+}
+// ------------------------------------------------------------------------
+inline void shader_set_mat2(Shader *shader, const char *name, const mat2s mat) {
+  glUniformMatrix2fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE,
+                     *mat.raw);
+}
+// ------------------------------------------------------------------------
+inline void shader_set_mat3(Shader *shader, const char *name, const mat3s mat) {
+  glUniformMatrix3fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE,
+                     *mat.raw);
+}
+// ------------------------------------------------------------------------
+inline void shader_set_mat4(Shader *shader, const char *name, const mat4s mat) {
+  glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE,
+                     *mat.raw);
+}
 
 // Helpers
 inline void check_shader_compilation(GLuint shader, const char *shader_type,
