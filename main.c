@@ -26,6 +26,7 @@ void check_program_linking(GLuint programID);
 uint32_t generate_texture(const char *path);
 
 void mouse_callback(GLFWwindow *window, double x_pos, double y_pos);
+void scroll_callback(GLFWwindow *window, double x_pos, double y_pos);
 
 const size_t SCR_WIDTH = 800;
 const size_t SCR_HEIGHT = 600;
@@ -39,6 +40,7 @@ float lastFrame = 0.0f;
 
 float yaw = -90.0f;
 float pitch = 0.0f;
+float fov = 80.0f;
 
 float last_x = (float)SCR_WIDTH / 2;
 float last_y = (float)SCR_HEIGHT / 2;
@@ -70,6 +72,7 @@ int main(void) {
   // Capture Cursor
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetScrollCallback(window, scroll_callback);
 
   glewExperimental = true;
   glewInit();
@@ -168,7 +171,7 @@ int main(void) {
                         (vec3s){{0.5f, 1.0f, 0.0f}});
     view = glms_translate(view, (vec3s){{0.0f, 0.0f, -3.0f}});
     projection = glms_perspective(
-        glm_rad(80.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm_rad(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
     shader_set_mat4(&base_shader, "model", model);
     shader_set_mat4(&base_shader, "view", view);
@@ -287,7 +290,7 @@ uint32_t generate_texture(const char *path) {
 }
 
 void mouse_callback(GLFWwindow *window, double x_pos, double y_pos) {
-  (void) window;
+  (void)window;
 
   if (firstMouse) {
     last_x = x_pos;
@@ -322,4 +325,17 @@ void mouse_callback(GLFWwindow *window, double x_pos, double y_pos) {
       .z = sin(glm_rad(yaw)) * cos(glm_rad(pitch)),
   };
   cameraFront = glms_normalize(direction);
+}
+
+void scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
+  (void)window;
+  (void)x_offset;
+
+  fov -= (float)y_offset;
+  if (fov > 80.0f) {
+    fov = 80.0f;
+  }
+  if (fov < 1.0f) {
+    fov = 1.0f;
+  }
 }
