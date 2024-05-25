@@ -1,5 +1,4 @@
-#include "include/cglm/struct/mat4.h"
-#include "include/cglm/types-struct.h"
+#include "include/cglm/util.h"
 #include <GL/glew.h>
 //
 #include <GL/gl.h>
@@ -10,8 +9,12 @@
 #include <stdio.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "include/cglm/struct/affine-pre.h"
 #include "include/stb_image.h"
+
+#include "include/cglm/struct/affine-pre.h"
+#include "include/cglm/struct/cam.h"
+#include "include/cglm/struct/mat4.h"
+#include "include/cglm/types-struct.h"
 
 #define SHADER_IMPLEMENTATION
 #include "lib/shader.h"
@@ -52,22 +55,42 @@ int main(void) {
   glewExperimental = true;
   glewInit();
 
+  glEnable(GL_DEPTH_TEST);
+
   Shader base_shader = new_shader("./glsl/vs.glsl", "./glsl/fs.glsl");
 
   float vertices[] = {
-      // positions          // colors           // texture coords
-      0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-      0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-      -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // top left
-  };
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
+      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-  uint32_t indices[] = {
-      0, 1, 3, // first triangle
-      1, 2, 3  // second triangle
-  };
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
+      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f, 0.0f,
 
-  uint32_t VBO, VAO, EBO;
+      -0.5f, 0.5f,  0.5f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 1.0f, 1.0f,
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  1.0f, 0.0f,
+
+      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      0.5f,  -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f, 1.0f,
+      0.5f,  -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 1.0f,
+      0.5f,  -0.5f, 0.5f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
+      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
+      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f};
+
+  vec3s cubePositions[] = {{{0.0f, 0.0f, 0.0f}},    {{2.0f, 5.0f, -15.0f}},
+                           {{-1.5f, -2.2f, -2.5f}}, {{-3.8f, -2.0f, -12.3f}},
+                           {{2.4f, -0.4f, -3.5f}},  {{-1.7f, 3.0f, -7.5f}},
+                           {{1.3f, -2.0f, -2.5f}},  {{1.5f, 2.0f, -2.5f}},
+                           {{1.5f, 0.2f, -1.5f}},   {{-1.3f, 1.0f, -1.5f}}};
+
+  uint32_t VBO, VAO;
 
   // VAO
   glGenVertexArrays(1, &VAO);
@@ -78,21 +101,12 @@ int main(void) {
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glGenBuffers(1, &EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * sizeof(float), NULL);
+  glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * sizeof(float), NULL);
   glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+  glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * sizeof(float),
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
-
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
 
   glBindVertexArray(0);
 
@@ -118,18 +132,38 @@ int main(void) {
     glBindTexture(GL_TEXTURE_2D, tFace);
 
     // Transformations
-    mat4s transform = glms_mat4_identity();
-    transform = glms_translate(transform, (vec3s){{0.5f, -0.5f, 0.0f}});
-    transform = glms_rotate(transform, (float)glfwGetTime(),
-                            (vec3s){{0.0f, 0.0f, 1.0f}});
+    mat4s model = glms_mat4_identity();
+    mat4s view = glms_mat4_identity();
+    mat4s projection = glms_mat4_identity();
+
+    model = glms_rotate(model, (float)glfwGetTime() * glm_rad(50.0f),
+                        (vec3s){{0.5f, 1.0f, 0.0f}});
+    view = glms_translate(view, (vec3s){{0.0f, 0.0f, -3.0f}});
+    projection = glms_perspective(
+        glm_rad(80.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+    shader_set_mat4(&base_shader, "model", model);
+    shader_set_mat4(&base_shader, "view", view);
+    shader_set_mat4(&base_shader, "projection", projection);
+
     // Transformations
 
     shader_use(&base_shader);
-    shader_set_mat4(&base_shader, "transform", transform);
 
     // Render Container
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    for (size_t i = 0; i < 10; i++) {
+      model = glms_mat4_identity();
+      model = glms_translate(model, cubePositions[i]);
+
+      float angle = 20.0f * glfwGetTime() + i * 10;
+      model = glms_rotate(model, glm_rad(angle), (vec3s){{1.0f, 0.3f, 0.5f}});
+
+      shader_set_mat4(&base_shader, "model", model);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     // Swap front and back buffers
     glfwSwapBuffers(window);
@@ -139,7 +173,6 @@ int main(void) {
 
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
-  glDeleteBuffers(1, &EBO);
   shader_free(&base_shader);
   // Cleanup GLFW
   glfwTerminate();
