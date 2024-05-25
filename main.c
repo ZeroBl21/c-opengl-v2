@@ -22,10 +22,10 @@
 
 void process_input(GLFWwindow *window);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void check_shader_compilation(GLuint shader, const char *shaderType,
-                              const char *filename);
 void check_program_linking(GLuint programID);
 uint32_t generate_texture(const char *path);
+
+void mouse_callback(GLFWwindow *window, double x_pos, double y_pos);
 
 const size_t SCR_WIDTH = 800;
 const size_t SCR_HEIGHT = 600;
@@ -36,6 +36,13 @@ vec3s cameraUp = {{0.0f, 1.0f, 0.0f}};
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+float yaw = -90.0f;
+float pitch = 0.0f;
+
+float last_x = (float)SCR_WIDTH / 2;
+float last_y = (float)SCR_HEIGHT / 2;
+bool firstMouse = true;
 
 int main(void) {
   if (!glfwInit()) {
@@ -59,6 +66,10 @@ int main(void) {
   // Make the window's context current
   glfwMakeContextCurrent(window);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+  // Capture Cursor
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetCursorPosCallback(window, mouse_callback);
 
   glewExperimental = true;
   glewInit();
@@ -273,4 +284,42 @@ uint32_t generate_texture(const char *path) {
 
   stbi_image_free(data);
   return texture;
+}
+
+void mouse_callback(GLFWwindow *window, double x_pos, double y_pos) {
+  (void) window;
+
+  if (firstMouse) {
+    last_x = x_pos;
+    last_y = y_pos;
+    firstMouse = false;
+  }
+
+  float x_offset = x_pos - last_x;
+  // Reversed since y-coordinates range from bottom to top
+  float y_offset = last_y - y_pos;
+
+  last_x = x_pos;
+  last_y = y_pos;
+
+  const float sensibility = 0.1f;
+  x_offset *= sensibility;
+  y_offset *= sensibility;
+
+  yaw += x_offset;
+
+  pitch += y_offset;
+  if (pitch > 89.0f) {
+    pitch = 89.0f;
+  }
+  if (pitch < -89.0f) {
+    pitch = -89.0f;
+  }
+
+  vec3s direction = {
+      .x = cos(glm_rad(yaw)) * cos(glm_rad(pitch)),
+      .y = sin(glm_rad(pitch)),
+      .z = sin(glm_rad(yaw)) * cos(glm_rad(pitch)),
+  };
+  cameraFront = glms_normalize(direction);
 }
