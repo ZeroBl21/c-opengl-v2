@@ -14,6 +14,7 @@
 #include "include/cglm/struct/affine-pre.h"
 #include "include/cglm/struct/cam.h"
 #include "include/cglm/struct/mat4.h"
+#include "include/cglm/struct/vec3.h"
 #include "include/cglm/types-struct.h"
 
 #define SHADER_IMPLEMENTATION
@@ -28,6 +29,13 @@ uint32_t generate_texture(const char *path);
 
 const size_t SCR_WIDTH = 800;
 const size_t SCR_HEIGHT = 600;
+
+vec3s cameraPos = {{0.0f, 0.0f, 3.0f}};
+vec3s cameraFront = {{0.0f, 0.0f, -1.0f}};
+vec3s cameraUp = {{0.0f, 1.0f, 0.0f}};
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 int main(void) {
   if (!glfwInit()) {
@@ -120,6 +128,10 @@ int main(void) {
 
   // Main rendering loop
   while (!glfwWindowShouldClose(window)) {
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+
     // Render here
     process_input(window);
     glClearColor(0x1e / 255.0, 0x29 / 255.0, 0x3b / 255.0, 1.0);
@@ -133,7 +145,12 @@ int main(void) {
 
     // Transformations
     mat4s model = glms_mat4_identity();
+    // Views
+
     mat4s view = glms_mat4_identity();
+    view =
+        glms_lookat(cameraPos, glms_vec3_add(cameraPos, cameraFront), cameraUp);
+
     mat4s projection = glms_mat4_identity();
 
     model = glms_rotate(model, (float)glfwGetTime() * glm_rad(50.0f),
@@ -191,6 +208,25 @@ void process_input(GLFWwindow *window) {
 
   if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+
+  // Movement
+  const float cameraSpeed = 2.5f * deltaTime;
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    cameraPos = glms_vec3_muladds(cameraFront, cameraSpeed, cameraPos);
+  }
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    cameraPos = glms_vec3_mulsubs(cameraFront, cameraSpeed, cameraPos);
+  }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    cameraPos = glms_vec3_mulsubs(
+        glms_normalize(glms_vec3_cross(cameraFront, cameraUp)), cameraSpeed,
+        cameraPos);
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    cameraPos = glms_vec3_muladds(
+        glms_normalize(glms_vec3_cross(cameraFront, cameraUp)), cameraSpeed,
+        cameraPos);
   }
 }
 
