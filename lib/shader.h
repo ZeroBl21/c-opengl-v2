@@ -40,7 +40,7 @@ void check_shader_compilation(GLuint shader, const char *shader_type,
 void check_program_linking(GLuint programID);
 #endif // SHADER_H
 
-#define SHADER_IMPLEMENTATION
+// #define SHADER_IMPLEMENTATION
 #ifdef SHADER_IMPLEMENTATION
 inline Shader new_shader(const char *vertex_path, const char *fragment_path) {
   Shader shader = {0};
