@@ -166,7 +166,7 @@ int main(void) {
                     (vec3s){{0x66 / 255.0f, 0x33 / 255.0f, 0x99 / 255.0f}});
     shader_set_vec3(&cube_shader, "lightColor", (vec3s){{1.0f, 1.0f, 1.0f}});
     shader_set_vec3(&cube_shader, "lightPos", light_pos);
-
+    shader_set_vec3(&cube_shader, "viewPos", camera.Position);
 
     // Transformations
     mat4s projection = glms_mat4_identity();
