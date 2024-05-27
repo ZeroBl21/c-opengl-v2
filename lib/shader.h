@@ -46,7 +46,7 @@ inline Shader new_shader(const char *vertex_path, const char *fragment_path) {
   Shader shader = {0};
 
   // 1. Retrieve the vertex/fragment source code from filePath
-  arena sArena = new_arena(1024);
+  arena sArena = new_arena(1024 * 2);
 
   string vertex_code = read_file(vertex_path, &sArena);
   string fragment_code = read_file(fragment_path, &sArena);
