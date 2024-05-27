@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <string.h>
@@ -36,7 +37,38 @@ alloc(arena *a, ptrdiff_t size, ptrdiff_t align, ptrdiff_t count) {
   ptrdiff_t available = a->end - a->current - padding;
 
   if (available < 0 || count > available / size) {
-    abort(); // Política de memoria insuficiente
+    // Política de memoria insuficiente
+    fprintf(stderr,
+            "ERROR: Not enough available memory on this arena for allocating "
+            "%td bits\n",
+            count);
+    abort();
+  }
+
+  void *p = a->current + padding;
+  a->current += padding + count * size;
+  return memset(p, 0, count * size);
+}
+
+// For debug alloc
+// #define alloc(a, size, align, count) alloc_debug(a, size, align, count,
+// __FILE__, __LINE__)
+
+__attribute__((malloc, alloc_size(2), alloc_align(3))) void *
+alloc_debug(arena *a, ptrdiff_t size, ptrdiff_t align, ptrdiff_t count,
+            const char *file, int line) {
+
+  ptrdiff_t padding =
+      (align - ((uintptr_t)a->current & (align - 1))) & (align - 1);
+  ptrdiff_t available = a->end - a->current - padding;
+
+  if (available < 0 || count > available / size) {
+    // Política de memoria insuficiente
+    fprintf(stderr,
+            "ERROR: Not enough available memory on this arena for allocating "
+            "%td bits\nFile: %s:%d\n",
+            count, file, line);
+    abort();
   }
 
   void *p = a->current + padding;
