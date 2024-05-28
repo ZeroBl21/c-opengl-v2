@@ -42,7 +42,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // Light
-vec3s light_pos = {{1.2f, 1.0f, 2.0f}};
+vec3s light_pos = {{0.0f, 1.0f, 2.0f}};
 
 int main(void) {
   if (!glfwInit()) {
@@ -161,12 +161,42 @@ int main(void) {
     // Active Shader
     shader_use(&cube_shader);
 
+    light_pos.x = sin(glfwGetTime()) * 2.0f;
+    light_pos.z = cos(glfwGetTime()) * 1.0f;
+
     // Light
-    shader_set_vec3(&cube_shader, "objectColor",
-                    (vec3s){{0x66 / 255.0f, 0x33 / 255.0f, 0x99 / 255.0f}});
-    shader_set_vec3(&cube_shader, "lightColor", (vec3s){{1.0f, 1.0f, 1.0f}});
-    shader_set_vec3(&cube_shader, "lightPos", light_pos);
     shader_set_vec3(&cube_shader, "viewPos", camera.Position);
+    shader_set_vec3(&cube_shader, "light.position", light_pos);
+
+    // cube material
+
+    // shader_set_vec3(&cube_shader, "material.ambient",
+    //                 (vec3s){{1.0f, 0.5f, 0.31f}});
+    // shader_set_vec3(&cube_shader, "material.diffuse",
+    //                 (vec3s){{1.0f, 0.5f, 0.31f}});
+    // shader_set_vec3(&cube_shader, "material.specular",
+    //                 (vec3s){{0.5f, 0.5f, 0.5f}});
+    // shader_set_float(&cube_shader, "material.shininess", 32.0f);
+
+    shader_set_vec3(&cube_shader, "material.ambient",
+                    (vec3s){{0.0537f, 0.2225f, 0.0662}});
+    shader_set_vec3(&cube_shader, "material.diffuse",
+                    (vec3s){{0.1827f, 0.17f, 0.2252f}});
+    shader_set_vec3(&cube_shader, "material.specular",
+                    (vec3s){{0.3327f, 0.3286f, 0.3464f}});
+    shader_set_float(&cube_shader, "material.shininess", 32.0f);
+
+    // cube lighting
+    shader_set_vec3(&cube_shader, "light.ambient", (vec3s){{0.4f, 0.4f, 0.4f}});
+
+    // shader_set_vec3(&cube_shader, "objectColor",
+    //                 );
+    vec3s light_color =
+        glms_vec3_add((vec3s){{0x66 / 255.0f, 0x33 / 255.0f, 0x99 / 255.0f}},
+                      (vec3s){{0.5f, 0.5f, 0.5f}});
+    shader_set_vec3(&cube_shader, "light.diffuse", light_color);
+    shader_set_vec3(&cube_shader, "light.specular",
+                    (vec3s){{1.0f, 1.0f, 1.0f}});
 
     // Transformations
     mat4s projection = glms_mat4_identity();
