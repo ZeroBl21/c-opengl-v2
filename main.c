@@ -167,9 +167,11 @@ int main(void) {
 
   // Texture
   uint32_t diffuseMap = generate_texture("./textures/container2.png");
+  uint32_t specularMap = generate_texture("./textures/container2_specular.png");
 
   shader_use(&cube_shader);
   shader_set_int(&cube_shader, "material.diffuse", 0);
+  shader_set_int(&cube_shader, "material.specular", 1);
 
   // Main rendering loop
   while (!glfwWindowShouldClose(window)) {
@@ -194,7 +196,7 @@ int main(void) {
 
     // Cube lighting
     shader_set_vec3(&cube_shader, "light.ambient", (vec3s){{0.4f, 0.4f, 0.4f}});
-    shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.5f, 0.5f, 0.5f}});
+    shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.9f, 0.9f, 0.9f}});
     shader_set_vec3(&cube_shader, "light.specular",
                     (vec3s){{1.0f, 1.0f, 1.0f}});
 
@@ -206,6 +208,8 @@ int main(void) {
     // Cube Texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, diffuseMap);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, specularMap);
 
     // Transformations
     mat4s projection = glms_mat4_identity();
