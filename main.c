@@ -125,6 +125,19 @@ int main(void) {
       -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f    //
   };
 
+  vec3s cubePositions[] = {
+      {{0.0f, 0.0f, 0.0f}},     //
+      {{2.0f, 5.0f, -15.0f}},   //
+      {{-1.5f, -2.2f, -2.5f}},  //
+      {{-3.8f, -2.0f, -12.3f}}, //
+      {{2.4f, -0.4f, -3.5f}},   //
+      {{-1.7f, 3.0f, -7.5f}},   //
+      {{1.3f, -2.0f, -2.5f}},   //
+      {{1.5f, 2.0f, -2.5f}},    //
+      {{1.5f, 0.2f, -1.5f}},    //
+      {{-1.3f, 1.0f, -1.5f}}    //
+  };
+
   // VBO
   uint32_t VBO;
 
@@ -192,18 +205,20 @@ int main(void) {
 
     // Light
     shader_set_vec3(&cube_shader, "viewPos", camera.Position);
-    shader_set_vec3(&cube_shader, "light.position", light_pos);
+    // shader_set_vec3(&cube_shader, "light.position", light_pos);
+    shader_set_vec3(&cube_shader, "light.direction",
+                    (vec3s){{-0.2f, -1.0f, -0.3f}});
 
     // Cube lighting
-    shader_set_vec3(&cube_shader, "light.ambient", (vec3s){{0.4f, 0.4f, 0.4f}});
-    shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.9f, 0.9f, 0.9f}});
+    shader_set_vec3(&cube_shader, "light.ambient", (vec3s){{0.2f, 0.2f, 0.2f}});
+    shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.5f, 0.5f, 0.5f}});
     shader_set_vec3(&cube_shader, "light.specular",
                     (vec3s){{1.0f, 1.0f, 1.0f}});
 
     // Cube material
     shader_set_vec3(&cube_shader, "material.specular",
                     (vec3s){{0.5f, 0.5f, 0.5f}});
-    shader_set_float(&cube_shader, "material.shininess", 32.0f * 2);
+    shader_set_float(&cube_shader, "material.shininess", 32.0f * 1);
 
     // Cube Texture
     glActiveTexture(GL_TEXTURE0);
@@ -225,11 +240,21 @@ int main(void) {
     shader_set_mat4(&cube_shader, "model", model);
 
     glBindVertexArray(cube_VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    for (unsigned int i = 0; i < 10; i++) {
+      mat4s model = glms_mat4_identity();
+      model = glms_translate(model, cubePositions[i]);
+      float angle = 20.0f * i;
+      model = glms_rotate(model, glm_rad(angle), (vec3s){{1.0f, 0.3f, 0.5f}});
+      shader_set_mat4(&cube_shader, "model", model);
+
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     // Lamp
 
-    shader_use(&lamp_shader);
+    // shader_use(&lamp_shader);
     shader_set_mat4(&lamp_shader, "projection", projection);
     shader_set_mat4(&lamp_shader, "view", view);
 
