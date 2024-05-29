@@ -205,15 +205,19 @@ int main(void) {
 
     // Light
     shader_set_vec3(&cube_shader, "viewPos", camera.Position);
-    // shader_set_vec3(&cube_shader, "light.position", light_pos);
-    shader_set_vec3(&cube_shader, "light.direction",
-                    (vec3s){{-0.2f, -1.0f, -0.3f}});
+    shader_set_vec3(&cube_shader, "light.position", light_pos);
+    // shader_set_vec3(&cube_shader, "light.direction",
+    //                 (vec3s){{light_pos.x, -1.0f, light_pos.z}});
 
     // Cube lighting
     shader_set_vec3(&cube_shader, "light.ambient", (vec3s){{0.2f, 0.2f, 0.2f}});
     shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.5f, 0.5f, 0.5f}});
     shader_set_vec3(&cube_shader, "light.specular",
                     (vec3s){{1.0f, 1.0f, 1.0f}});
+
+    shader_set_float(&cube_shader, "light.constant", 1.0f);
+    shader_set_float(&cube_shader, "light.linear", 0.09f);
+    shader_set_float(&cube_shader, "light.quadratic", 0.032f);
 
     // Cube material
     shader_set_vec3(&cube_shader, "material.specular",
@@ -254,7 +258,7 @@ int main(void) {
 
     // Lamp
 
-    // shader_use(&lamp_shader);
+    shader_use(&lamp_shader);
     shader_set_mat4(&lamp_shader, "projection", projection);
     shader_set_mat4(&lamp_shader, "view", view);
 
