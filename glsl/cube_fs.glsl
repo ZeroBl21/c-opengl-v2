@@ -16,6 +16,7 @@ struct Material {
 //     vec3 specular;
 // };
 
+// Directional Light
 // struct Light {
 //     vec3 direction;
 //
@@ -24,8 +25,25 @@ struct Material {
 //     vec3 specular;
 // };
 
+// Point Light
+// struct Light {
+//     vec3 position;
+//
+//     vec3 ambient;
+//     vec3 diffuse;
+//     vec3 specular;
+//
+//     float constant;
+//     float linear;
+//     float quadratic;
+// };
+//
+// Flashlight
 struct Light {
     vec3 position;
+    vec3 direction;
+    float cutoff;
+    float outerCutoff;
 
     vec3 ambient;
     vec3 diffuse;
@@ -45,20 +63,16 @@ uniform Material material;
 uniform Light light;
 
 void main() {
-    vec3 diffuseMap = vec3(texture(material.diffuse, TexCoords));
-    vec3 specularMap = vec3(texture(material.specular, TexCoords));
+    vec3 diffuseMap = texture(material.diffuse, TexCoords).rgb;
+    vec3 specularMap = texture(material.specular, TexCoords).rgb;
 
-    float distance = length(light.position - FragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance +
-                light.quadratic * (distance * distance));
+    vec3 lightDir = normalize(light.position - FragPos);
 
     // Ambient
     vec3 ambient = light.ambient * diffuseMap;
 
     // Diffuse
     vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(light.position - FragPos);
-
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.diffuse * diff * diffuseMap;
 
@@ -69,7 +83,19 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * specularMap;
 
-    ambient *= attenuation;
+    // Spotlight
+    float theta = dot(lightDir, normalize(-light.direction));
+    float epsilon = light.cutoff - light.outerCutoff;
+    float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0f, 1.0f);
+    diffuse *= intensity;
+    specular *= intensity;
+
+    // Attenuation
+    float distance = length(light.position - FragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance +
+                light.quadratic * (distance * distance));
+
+    // ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
 

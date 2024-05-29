@@ -205,13 +205,14 @@ int main(void) {
 
     // Light
     shader_set_vec3(&cube_shader, "viewPos", camera.Position);
-    shader_set_vec3(&cube_shader, "light.position", light_pos);
-    // shader_set_vec3(&cube_shader, "light.direction",
-    //                 (vec3s){{light_pos.x, -1.0f, light_pos.z}});
+    shader_set_vec3(&cube_shader, "light.position", camera.Position);
+    shader_set_vec3(&cube_shader, "light.direction", camera.Front);
+    shader_set_float(&cube_shader, "light.cutoff", cos(glm_rad(15.5f)));
+    shader_set_float(&cube_shader, "light.outerCutoff", cos(glm_rad(20.5f)));
 
     // Cube lighting
     shader_set_vec3(&cube_shader, "light.ambient", (vec3s){{0.2f, 0.2f, 0.2f}});
-    shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.5f, 0.5f, 0.5f}});
+    shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.8f, 0.8f, 0.8f}});
     shader_set_vec3(&cube_shader, "light.specular",
                     (vec3s){{1.0f, 1.0f, 1.0f}});
 
@@ -222,7 +223,7 @@ int main(void) {
     // Cube material
     shader_set_vec3(&cube_shader, "material.specular",
                     (vec3s){{0.5f, 0.5f, 0.5f}});
-    shader_set_float(&cube_shader, "material.shininess", 32.0f * 1);
+    shader_set_float(&cube_shader, "material.shininess", 32.0f * 2);
 
     // Cube Texture
     glActiveTexture(GL_TEXTURE0);
@@ -258,7 +259,7 @@ int main(void) {
 
     // Lamp
 
-    shader_use(&lamp_shader);
+    // shader_use(&lamp_shader);
     shader_set_mat4(&lamp_shader, "projection", projection);
     shader_set_mat4(&lamp_shader, "view", view);
 
