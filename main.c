@@ -125,7 +125,7 @@ int main(void) {
       -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f    //
   };
 
-  vec3s cubePositions[] = {
+  vec3s cube_positions[] = {
       {{0.0f, 0.0f, 0.0f}},     //
       {{2.0f, 5.0f, -15.0f}},   //
       {{-1.5f, -2.2f, -2.5f}},  //
@@ -136,6 +136,13 @@ int main(void) {
       {{1.5f, 2.0f, -2.5f}},    //
       {{1.5f, 0.2f, -1.5f}},    //
       {{-1.3f, 1.0f, -1.5f}}    //
+  };
+
+  vec3s point_light_positions[] = {
+      {{0.7f, 0.2f, 2.0f}},    //
+      {{2.3f, -3.3f, -4.0f}},  //
+      {{-4.0f, 2.0f, -12.0f}}, //
+      {{0.0f, 0.0f, -3.0f}}    //
   };
 
   // VBO
@@ -199,31 +206,92 @@ int main(void) {
 
     // Active Shader
     shader_use(&cube_shader);
+    shader_set_vec3(&cube_shader, "viewPos", camera.Position);
+
+    // Cube material
+    shader_set_float(&cube_shader, "material.shininess", 32.0f * 2);
 
     light_pos.x = sin(glfwGetTime()) * 2.0f;
     light_pos.z = cos(glfwGetTime()) * 1.0f;
 
+    ////////////////////
+
     // Light
-    shader_set_vec3(&cube_shader, "viewPos", camera.Position);
-    shader_set_vec3(&cube_shader, "light.position", camera.Position);
-    shader_set_vec3(&cube_shader, "light.direction", camera.Front);
-    shader_set_float(&cube_shader, "light.cutoff", cos(glm_rad(15.5f)));
-    shader_set_float(&cube_shader, "light.outerCutoff", cos(glm_rad(20.5f)));
 
-    // Cube lighting
-    shader_set_vec3(&cube_shader, "light.ambient", (vec3s){{0.2f, 0.2f, 0.2f}});
-    shader_set_vec3(&cube_shader, "light.diffuse", (vec3s){{0.8f, 0.8f, 0.8f}});
-    shader_set_vec3(&cube_shader, "light.specular",
-                    (vec3s){{1.0f, 1.0f, 1.0f}});
-
-    shader_set_float(&cube_shader, "light.constant", 1.0f);
-    shader_set_float(&cube_shader, "light.linear", 0.09f);
-    shader_set_float(&cube_shader, "light.quadratic", 0.032f);
-
-    // Cube material
-    shader_set_vec3(&cube_shader, "material.specular",
+    // directional light
+    shader_set_vec3(&cube_shader, "dir_light.direction",
+                    (vec3s){{-0.2f, -1.0f, -0.3f}});
+    shader_set_vec3(&cube_shader, "dir_light.ambient",
+                    (vec3s){{0.05f, 0.05f, 0.05f}});
+    shader_set_vec3(&cube_shader, "dir_light.diffuse",
+                    (vec3s){{0.4f, 0.4f, 0.4f}});
+    shader_set_vec3(&cube_shader, "dir_light.specular",
                     (vec3s){{0.5f, 0.5f, 0.5f}});
-    shader_set_float(&cube_shader, "material.shininess", 32.0f * 2);
+    // point light 1
+    shader_set_vec3(&cube_shader, "point_lights[0].position",
+                    point_light_positions[0]);
+    shader_set_vec3(&cube_shader, "point_lights[0].ambient",
+                    (vec3s){{0.05f, 0.05f, 0.05f}});
+    shader_set_vec3(&cube_shader, "point_lights[0].diffuse",
+                    (vec3s){{0.8f, 0.8f, 0.8f}});
+    shader_set_vec3(&cube_shader, "point_lights[0].specular",
+                    (vec3s){{1.0f, 1.0f, 1.0f}});
+    shader_set_float(&cube_shader, "point_lights[0].constant", 1.0f);
+    shader_set_float(&cube_shader, "point_lights[0].linear", 0.09f);
+    shader_set_float(&cube_shader, "point_lights[0].quadratic", 0.032f);
+    // point light 2
+    shader_set_vec3(&cube_shader, "point_lights[1].position",
+                    point_light_positions[1]);
+    shader_set_vec3(&cube_shader, "point_lights[1].ambient",
+                    (vec3s){{0.05f, 0.05f, 0.05f}});
+    shader_set_vec3(&cube_shader, "point_lights[1].diffuse",
+                    (vec3s){{0.8f, 0.8f, 0.8f}});
+    shader_set_vec3(&cube_shader, "point_lights[1].specular",
+                    (vec3s){{1.0f, 1.0f, 1.0f}});
+    shader_set_float(&cube_shader, "point_lights[1].constant", 1.0f);
+    shader_set_float(&cube_shader, "point_lights[1].linear", 0.09f);
+    shader_set_float(&cube_shader, "point_lights[1].quadratic", 0.032f);
+    // point light 3
+    shader_set_vec3(&cube_shader, "point_lights[2].position",
+                    point_light_positions[2]);
+    shader_set_vec3(&cube_shader, "point_lights[2].ambient",
+                    (vec3s){{0.05f, 0.05f, 0.05f}});
+    shader_set_vec3(&cube_shader, "point_lights[2].diffuse",
+                    (vec3s){{0.8f, 0.8f, 0.8f}});
+    shader_set_vec3(&cube_shader, "point_lights[2].specular",
+                    (vec3s){{1.0f, 1.0f, 1.0f}});
+    shader_set_float(&cube_shader, "point_lights[2].constant", 1.0f);
+    shader_set_float(&cube_shader, "point_lights[2].linear", 0.09f);
+    shader_set_float(&cube_shader, "point_lights[2].quadratic", 0.032f);
+    // point light 4
+    shader_set_vec3(&cube_shader, "point_lights[3].position",
+                    point_light_positions[3]);
+    shader_set_vec3(&cube_shader, "point_lights[3].ambient",
+                    (vec3s){{0.05f, 0.05f, 0.05f}});
+    shader_set_vec3(&cube_shader, "point_lights[3].diffuse",
+                    (vec3s){{0.8f, 0.8f, 0.8f}});
+    shader_set_vec3(&cube_shader, "point_lights[3].specular",
+                    (vec3s){{1.0f, 1.0f, 1.0f}});
+    shader_set_float(&cube_shader, "point_lights[3].constant", 1.0f);
+    shader_set_float(&cube_shader, "point_lights[3].linear", 0.09f);
+    shader_set_float(&cube_shader, "point_lights[3].quadratic", 0.032f);
+    // spotLight
+    shader_set_vec3(&cube_shader, "spot_light.position", camera.Position);
+    shader_set_vec3(&cube_shader, "spot_light.direction", camera.Front);
+    shader_set_vec3(&cube_shader, "spot_light.ambient",
+                    (vec3s){{0.0f, 0.0f, 0.0f}});
+    shader_set_vec3(&cube_shader, "spot_light.diffuse",
+                    (vec3s){{1.0f, 1.0f, 1.0f}});
+    shader_set_vec3(&cube_shader, "spot_light.specular",
+                    (vec3s){{1.0f, 1.0f, 1.0f}});
+    shader_set_float(&cube_shader, "spot_light.constant", 1.0f);
+    shader_set_float(&cube_shader, "spot_light.linear", 0.09f);
+    shader_set_float(&cube_shader, "spot_light.quadratic", 0.032f);
+    shader_set_float(&cube_shader, "spot_light.cutOff", cos(glm_rad(12.5f)));
+    shader_set_float(&cube_shader, "spot_light.outerCutOff",
+                     cos(glm_rad(15.0f)));
+
+    ////////////////////
 
     // Cube Texture
     glActiveTexture(GL_TEXTURE0);
@@ -249,7 +317,7 @@ int main(void) {
 
     for (unsigned int i = 0; i < 10; i++) {
       mat4s model = glms_mat4_identity();
-      model = glms_translate(model, cubePositions[i]);
+      model = glms_translate(model, cube_positions[i]);
       float angle = 20.0f * i;
       model = glms_rotate(model, glm_rad(angle), (vec3s){{1.0f, 0.3f, 0.5f}});
       shader_set_mat4(&cube_shader, "model", model);
